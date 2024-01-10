@@ -3,9 +3,8 @@ const mysql = require('mysql2')
 const cors = require('cors')
 
 
-//connect to express app
+//Connect to express app
 const app = express()
-
 
 
 const db = mysql.createConnection({
@@ -16,13 +15,12 @@ const db = mysql.createConnection({
 });
 
 
-
 app.listen(3001, ()=>{
     console.log('server is running on port 3001')
 })
 
 
-//muddleware
+//middleware
 app.use(express.json())
 app.use(cors())
 
@@ -42,5 +40,41 @@ app.post('/create',(req,res)=>{
             }
         }
     )
-}) 
+})
 
+//GET REQUEST
+app.get('/employees' ,(req,res)=>{
+    db.query('SELECT * FROM employees',(err ,result)=>{
+        if(err){
+            console.log(err)
+        }else {
+            res.json(result)
+        }
+    })
+})
+
+//UPDATE REQUEST
+app.put('/employees', (req, res) => {
+    const {id, name} = req.body
+    db.query('UPDATE employees SET name = ? WHERE id = ?', [name, id], (err, result) => {
+        if(err){
+            console.log(err)
+        } else{
+            res.send(result)
+        }
+    })
+})
+
+
+
+//DELETE REQUEST
+app.delete('/employees/:id',(req ,res) =>{
+    const {id} = req.params
+    db.query('DELETE FROM employees WHERE id = ?',id , (err, result) =>{
+       if(err){
+        console.log(err)
+       } else {
+        res.send(result)
+       }
+    })
+})
