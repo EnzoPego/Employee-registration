@@ -55,8 +55,25 @@ app.get('/employees' ,(req,res)=>{
 
 //UPDATE REQUEST
 app.put('/employees', (req, res) => {
-    const {id, name} = req.body
-    db.query('UPDATE employees SET name = ? WHERE id = ?', [name, id], (err, result) => {
+    const {name, age, id} = req.body;
+    let query = 'UPDATE employees SET ';
+    let params = [];
+
+    if (name !== undefined) {
+        query += 'name = ?, ';
+        params.push(name);
+    }
+
+    if (age !== undefined) {
+        query += 'age = ?, ';
+        params.push(age);
+    }
+
+    query = query.slice(0, -2); // Elimina la última coma y espacio
+    query += ' WHERE id = ?';
+    params.push(id);
+
+    db.query(query, params, (err, result) => {
         if(err){
             console.log(err)
         } else{
@@ -64,7 +81,6 @@ app.put('/employees', (req, res) => {
         }
     })
 })
-
 
 
 //DELETE REQUEST

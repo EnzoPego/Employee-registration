@@ -3,7 +3,7 @@ import {Home} from './pages/Home'
 
 
 export const App = () => {
-  return (
+  return ( 
     <div className='App bg-[#1a1a1a] w-full '>
       <Home />
     </div>
