@@ -1,13 +1,12 @@
 const express = require('express')
-const mysql = require('mysql2')
+const mysql = require('mysql2/promise')
 const cors = require('cors')
-
 
 //Connect to express app
 const app = express()
 
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
     user: 'root',
     host: 'localhost',
     password: 'enzzomysql',
@@ -25,36 +24,33 @@ app.use(express.json())
 app.use(cors())
 
 
-//Routes
 //POST REQUEST
-app.post('/create',(req,res)=>{
+app.post('/create', async (req,res)=>{
     const {name, age} = req.body
-    db.query(
-        'INSERT INTO employees (name,age) VALUES (?,?)',
-        [name, age],
-        (err, result)=>{
-            if(err) {
-                console.log('values where successfully inserted')
-            } else {
-                res.send('The values where successfuly inserted')
-            }
-        }
-    )
+    try {
+        const result = await db.query(
+            'INSERT INTO employees (name,age) VALUES (?,?)',
+            [name, age]
+        )
+        res.send('The values were successfully inserted')
+    } catch (err) {
+        console.log(err)
+    }
 })
 
+
 //GET REQUEST
-app.get('/employees' ,(req,res)=>{
-    db.query('SELECT * FROM employees',(err ,result)=>{
-        if(err){
-            console.log(err)
-        }else {
-            res.json(result)
-        }
-    })
+app.get('/employees', async (req,res)=>{
+    try {
+        const [rows, fields] = await db.query('SELECT * FROM employees')
+        res.json(rows)
+    } catch (err) {
+        console.log(err)
+    }
 })
 
 //UPDATE REQUEST
-app.put('/employees', (req, res) => {
+app.put('/employees', async (req, res) => {
     const {name, age, id} = req.body;
     let query = 'UPDATE employees SET ';
     let params = [];
@@ -69,28 +65,26 @@ app.put('/employees', (req, res) => {
         params.push(age);
     }
 
-    query = query.slice(0, -2); // Elimina la última coma y espacio
-    query += ' WHERE id = ?';
-    params.push(id);
+     query = query.slice(0, -2); 
+     query += ' WHERE id = ?';
+     params.push(id);
 
-    db.query(query, params, (err, result) => {
-        if(err){
-            console.log(err)
-        } else{
-            res.send(result)
-        }
-    })
+    try {
+        const result = await db.query(query, params)
+        res.send(result)
+    } catch (err) {
+        console.log(err)
+    }
 })
 
 
 //DELETE REQUEST
-app.delete('/employees/:id',(req ,res) =>{
+app.delete('/employees/:id', async (req ,res) =>{
     const {id} = req.params
-    db.query('DELETE FROM employees WHERE id = ?',id , (err, result) =>{
-       if(err){
-        console.log(err)
-       } else {
+    try {
+        const result = await db.query('DELETE FROM employees WHERE id = ?', id)
         res.send(result)
-       }
-    })
+    } catch (err) {
+        console.log(err)
+    }
 })
